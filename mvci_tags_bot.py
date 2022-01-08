@@ -119,18 +119,25 @@ async def fixup_channel(channel_id, hash_string, disc_history_len, twit_hist_len
                 ids.append(int(id))
         
     ids.sort()
-    for i in range(len(ids)):
-        print(ids[i])
+    #for i in range(len(ids)):
+    #    print(ids[i])
         
     
     tweets = await twintSwearch(hash_string, twit_hist_len)
     
+    new_tweet_count = 0
+    old_tweet_count = 0
+    new_tweet_msgs = {}
+    
     for i in range(len(tweets)):
         if(int(tweets[i].id) in ids):
-            print(f"tweet {tweets[i].id} by {tweets[i].username} was already in the list")
+            old_tweet_count += 1
+            #print(f"tweet {tweets[i].id} by {tweets[i].username} was already in the list")
         else:
-            print(f"tweet {tweets[i].id} by {tweets[i].username} is a new tweet")
-
+            new_tweet_count += 1
+            new_tweet_msgs[int(tweets[i].id)] = f"https://twitter.com/{tweets[i].username}/status/{tweets[i].id}"
+            #print(f"tweet {tweets[i].id} by {tweets[i].username} is a new tweet")
+    print(f"Found {new_tweet_count} new and {old_tweet_count} old tweets for {ch}")
 
 @client.event
 async def on_ready():
@@ -139,6 +146,8 @@ async def on_ready():
         f"{client.user} is connected to the following guild:\n"
         f"{guild.name}(id: {guild.id})"
     )
+    
+    
     key = list(id_and_hash.keys())[3]
     print(f" searching for {key} and {id_and_hash[key]}")
     await fixup_channel(key,id_and_hash[key],500,500)
