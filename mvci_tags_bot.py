@@ -148,17 +148,17 @@ async def on_ready():
     )
     
     
-    key = list(id_and_hash.keys())[3]
-    print(f" searching for {key} and {id_and_hash[key]}")
-    await fixup_channel(key,id_and_hash[key],500,500)
+   # key = list(id_and_hash.keys())[3]
+   # print(f" searching for {key} and {id_and_hash[key]}")
+   # await fixup_channel(key,id_and_hash[key],500,500)
     
-    key = list(id_and_hash.keys())[4]
-    print(f" searching for {key} and {id_and_hash[key]}")
-    await fixup_channel(key,id_and_hash[key],500,500)
+   # key = list(id_and_hash.keys())[4]
+   # print(f" searching for {key} and {id_and_hash[key]}")
+   # await fixup_channel(key,id_and_hash[key],500,500)
     
-    #for i in id_and_hash.keys():
-    #    print(f" searching for {i} and {id_and_hash[i]}")
-        #await fixup_channel(i,id_and_hash[i],500,500)
+    for i in id_and_hash.keys():
+        print(f" searching for {i} and {id_and_hash[i]}")
+        await fixup_channel(i,id_and_hash[i],500,500)
     #await fixup_channel(528055766633152513,"#mvci_cma",500,500)
     
 
