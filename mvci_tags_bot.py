@@ -122,7 +122,6 @@ async def fixup_channel(channel_id, hash_string, disc_history_len, twit_hist_len
     #for i in range(len(ids)):
     #    print(ids[i])
         
-    
     tweets = await twintSwearch(hash_string, twit_hist_len)
     
     new_tweet_count = 0
@@ -138,6 +137,12 @@ async def fixup_channel(channel_id, hash_string, disc_history_len, twit_hist_len
             new_tweet_msgs[int(tweets[i].id)] = f"https://twitter.com/{tweets[i].username}/status/{tweets[i].id}"
             #print(f"tweet {tweets[i].id} by {tweets[i].username} is a new tweet")
     print(f"Found {new_tweet_count} new and {old_tweet_count} old tweets for {ch}")
+    new_tweet_keys = list(new_tweet_msgs.keys())
+    new_tweet_keys.sort()
+    
+    await ch.send("Test",delete_after = 30)
+    for i in new_tweet_keys:
+        print(f"tweet id : {i} | url {new_tweet_msgs[i]}")
 
 @client.event
 async def on_ready():
@@ -148,18 +153,18 @@ async def on_ready():
     )
     
     
-   # key = list(id_and_hash.keys())[3]
-   # print(f" searching for {key} and {id_and_hash[key]}")
-   # await fixup_channel(key,id_and_hash[key],500,500)
+    key = list(id_and_hash.keys())[3]
+    print(f" searching for {key} and {id_and_hash[key]}")
+    await fixup_channel(key,id_and_hash[key],500,500)
     
-   # key = list(id_and_hash.keys())[4]
-   # print(f" searching for {key} and {id_and_hash[key]}")
-   # await fixup_channel(key,id_and_hash[key],500,500)
+    key = list(id_and_hash.keys())[4]
+    print(f" searching for {key} and {id_and_hash[key]}")
+    await fixup_channel(key,id_and_hash[key],500,500)
     
-    for i in id_and_hash.keys():
-        print(f" searching for {i} and {id_and_hash[i]}")
-        await fixup_channel(i,id_and_hash[i],500,500)
-    #await fixup_channel(528055766633152513,"#mvci_cma",500,500)
+    # for i in id_and_hash.keys():
+    #     print(f" searching for {i} and {id_and_hash[i]}")
+    #     await fixup_channel(i,id_and_hash[i],500,500)
+    # await fixup_channel(528055766633152513,"#mvci_cma",500,500)
     
 
 client.run(TOKEN)
