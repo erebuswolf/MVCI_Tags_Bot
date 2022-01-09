@@ -167,6 +167,12 @@ async def fixup_all_channels(ctx):
         await fixup_channel(ctx, i,id_and_hash[i],500,500)
         
 
+@bot.command(name='clear', help='Delete messages in a channel')
+async def clear_msgs(ctx, count: int):
+    messages = await ctx.history(limit=count).flatten()
+    for m in messages:
+        await m.delete()
+    
 
 @bot.command(name='run_bot_all', help='Scrapes twitter for new MVCI tagged tweets on all tags')
 async def check_for_tweets(ctx):
