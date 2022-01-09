@@ -62,7 +62,8 @@ id_and_hash = {528055603608682526 : "#MVCI_ART",
                528057443331211293 : "#MVCI_SPA",
                528057463476453377 : "#MVCI_SOU",
                528057484225675276 : "#MVCI_POW",
-               528057503142117406 : "#MVCI_REA",
+               # 528057503142117406 : "#MVCI_REA",
+               929729117463650324 : "#MVCI_REA", #test reality
                528057526189686784 : "#MVCI_TIM",
                528057513388670976 : "#MVCI_MIN",}
 
@@ -143,13 +144,12 @@ async def fixup_channel(channel_id, hash_string, disc_history_len, twit_hist_len
     new_tweet_keys = list(new_tweet_msgs.keys())
     new_tweet_keys.sort()
     
-    #await ch.send("Test", delete_after = 30)
     
     for i in new_tweet_keys:
         print(f"tweet id : {i} | url {new_tweet_msgs[i]}")
+        await ch.send(new_tweet_msgs[i])
     
     return len(new_tweet_keys)
-
 
 
 async def fixup_all_channels(ctx):
