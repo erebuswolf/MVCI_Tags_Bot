@@ -11,7 +11,9 @@ Created on Thu Jan  6 02:03:39 2022
 import discord
 import twint
 #from dotenv import load_dotenv
-import asyncio
+# import asyncio
+
+from discord.ext import commands
 import nest_asyncio
 nest_asyncio.apply()
 
@@ -88,7 +90,7 @@ async def twintSwearch(query, limit):
     #c.Output = "tweets.csv"
     #c.Format = "ID {id} | URL {urls[0]}"
 
-    twint.run.Search(c)
+    await twint.run.Search(c)
 
     print(f"Searching Twitter for {query}")
 
@@ -102,11 +104,12 @@ async def twintSwearch(query, limit):
 TOKEN = auth['discord_token']
 GUILD = auth['guild_name']
 
-client = discord.Client()
+# client = discord.Client()
+bot = commands.Bot(command_prefix='!')
 
 async def fixup_channel(channel_id, hash_string, disc_history_len, twit_hist_len):
     
-    ch = client.get_channel(channel_id)
+    ch = bot.get_channel(channel_id)
     print(f"Running on Channel {ch}")
     messages = await ch.history(limit=disc_history_len).flatten()
     
@@ -140,31 +143,70 @@ async def fixup_channel(channel_id, hash_string, disc_history_len, twit_hist_len
     new_tweet_keys = list(new_tweet_msgs.keys())
     new_tweet_keys.sort()
     
-    await ch.send("Test",delete_after = 30)
+    #await ch.send("Test", delete_after = 30)
+    
     for i in new_tweet_keys:
         print(f"tweet id : {i} | url {new_tweet_msgs[i]}")
+    
+    return len(new_tweet_keys)
 
-@client.event
+
+
+async def fixup_all_channels(ctx):
+    for i in id_and_hash.keys():
+        print(f" searching for {i} and {id_and_hash[i]}")
+        new_tweets = await fixup_channel(i,id_and_hash[i],500,500)
+        await ctx.send(f"found {new_tweets} new tweets for {id_and_hash[i]}", delete_after = 30)
+
+
+@bot.command(name='run_bot_all', help='Scrapes twitter for new MVCI tagged tweets on all tags')
+async def check_for_tweets(ctx):
+    await ctx.send("Running bot", delete_after = 30)
+    await fixup_all_channels(ctx)
+    
+    
+@bot.command(name='run_bot_tag', help='Scrapes twitter for new MVCI tagged tweets on a specific tag')
+async def check_for_tweets_single(ctx, tag_str: str):
+    await   ctx.send(f"Running bot on tag {tag_str}", delete_after = 30)
+    if tag_str.upper() not in list(id_and_hash.values()):
+        await ctx.send(f"No channel exists for tag {tag_str}", delete_after = 30)
+    else:
+        keys = list(id_and_hash.keys())
+        goal_id = 0
+        for k in keys:
+            if (id_and_hash[k] == tag_str.upper()):
+                goal_id = k
+                break
+        if (goal_id == 0):
+            await ctx.send(f"Error finding channel for {tag_str}", delete_after = 30)
+        else:
+            new_tweets = await fixup_channel(goal_id,id_and_hash[goal_id],500,500)
+            await ctx.send(f"found {new_tweets} new tweets for {tag_str.upper()}")
+            
+
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.errors.MissingRequiredArgument):
+        await ctx.send('Missing command arguments.\n use !run_bot_tag #MVCI_tag', delete_after = 30)
+        
+
+@bot.event
 async def on_ready():
-    guild = discord.utils.get(client.guilds, name=GUILD)
+    guild = discord.utils.get(bot.guilds, name=GUILD)
     print(
-        f"{client.user} is connected to the following guild:\n"
+        f"{bot.user} is connected to the following guild:\n"
         f"{guild.name}(id: {guild.id})"
     )
     
+    # key = list(id_and_hash.keys())[3]
+    # print(f" searching for {key} and {id_and_hash[key]}")
+    # await fixup_channel(key,id_and_hash[key],500,500)
     
-    key = list(id_and_hash.keys())[3]
-    print(f" searching for {key} and {id_and_hash[key]}")
-    await fixup_channel(key,id_and_hash[key],500,500)
+    # key = list(id_and_hash.keys())[4]
+    # print(f" searching for {key} and {id_and_hash[key]}")
+    # await fixup_channel(key,id_and_hash[key],500,500)
     
-    key = list(id_and_hash.keys())[4]
-    print(f" searching for {key} and {id_and_hash[key]}")
-    await fixup_channel(key,id_and_hash[key],500,500)
-    
-    # for i in id_and_hash.keys():
-    #     print(f" searching for {i} and {id_and_hash[i]}")
-    #     await fixup_channel(i,id_and_hash[i],500,500)
     # await fixup_channel(528055766633152513,"#mvci_cma",500,500)
-    
 
-client.run(TOKEN)
+
+bot.run(TOKEN)
