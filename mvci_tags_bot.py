@@ -108,7 +108,7 @@ GUILD = auth['guild_name']
 # client = discord.Client()
 bot = commands.Bot(command_prefix='!')
 
-async def fixup_channel(channel_id, hash_string, disc_history_len, twit_hist_len):
+async def fixup_channel(ctx, channel_id, hash_string, disc_history_len, twit_hist_len):
     
     ch = bot.get_channel(channel_id)
     print(f"Running on Channel {ch}")
@@ -130,9 +130,13 @@ async def fixup_channel(channel_id, hash_string, disc_history_len, twit_hist_len
     
     new_tweet_count = 0
     old_tweet_count = 0
+    old_tweet_not_found = 0
     new_tweet_msgs = {}
     
+    tweet_ids_found = []
+    
     for i in range(len(tweets)):
+        tweet_ids_found.append(int(tweets[i].id))
         if(int(tweets[i].id) in ids):
             old_tweet_count += 1
             #print(f"tweet {tweets[i].id} by {tweets[i].username} was already in the list")
@@ -140,7 +144,12 @@ async def fixup_channel(channel_id, hash_string, disc_history_len, twit_hist_len
             new_tweet_count += 1
             new_tweet_msgs[int(tweets[i].id)] = f"https://twitter.com/{tweets[i].username}/status/{tweets[i].id}"
             #print(f"tweet {tweets[i].id} by {tweets[i].username} is a new tweet")
-    print(f"Found {new_tweet_count} new and {old_tweet_count} old tweets for {ch}")
+    
+    for i in ids:
+        if(i not in tweet_ids_found):
+            old_tweet_not_found += 1
+        
+    print(f"Found {new_tweet_count} new tweets, {old_tweet_count} old tweets, and could not refind {old_tweet_not_found} tweets for {ch}")
     new_tweet_keys = list(new_tweet_msgs.keys())
     new_tweet_keys.sort()
     
@@ -148,15 +157,15 @@ async def fixup_channel(channel_id, hash_string, disc_history_len, twit_hist_len
     for i in new_tweet_keys:
         print(f"tweet id : {i} | url {new_tweet_msgs[i]}")
         await ch.send(new_tweet_msgs[i])
+        
+    await ctx.send(f"Found {new_tweet_count} new tweets with {hash_string}\n{old_tweet_not_found} already posted tweets in the channel were not found on twitter (likely older tweets the search can't find)")
     
-    return len(new_tweet_keys)
-
 
 async def fixup_all_channels(ctx):
     for i in id_and_hash.keys():
         print(f" searching for {i} and {id_and_hash[i]}")
-        new_tweets = await fixup_channel(i,id_and_hash[i],500,500)
-        await ctx.send(f"found {new_tweets} new tweets for {id_and_hash[i]}", delete_after = 30)
+        await fixup_channel(ctx, i,id_and_hash[i],500,500)
+        
 
 
 @bot.command(name='run_bot_all', help='Scrapes twitter for new MVCI tagged tweets on all tags')
@@ -180,14 +189,16 @@ async def check_for_tweets_single(ctx, tag_str: str):
         if (goal_id == 0):
             await ctx.send(f"Error finding channel for {tag_str}", delete_after = 30)
         else:
-            new_tweets = await fixup_channel(goal_id,id_and_hash[goal_id],500,500)
-            await ctx.send(f"found {new_tweets} new tweets for {tag_str.upper()}")
+            await fixup_channel(ctx, goal_id,id_and_hash[goal_id],500,500)
             
 
 @bot.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.errors.MissingRequiredArgument):
         await ctx.send('Missing command arguments.\n use !run_bot_tag #MVCI_tag', delete_after = 30)
+    else:
+        await ctx.send(f'Unknown error {error}', delete_after = 30)
+        raise
         
 
 @bot.event
