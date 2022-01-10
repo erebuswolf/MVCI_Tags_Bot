@@ -62,8 +62,8 @@ id_and_hash = {528055603608682526 : "#MVCI_ART",
                528057443331211293 : "#MVCI_SPA",
                528057463476453377 : "#MVCI_SOU",
                528057484225675276 : "#MVCI_POW",
-               # 528057503142117406 : "#MVCI_REA",
-               929729117463650324 : "#MVCI_REA", #test reality
+               528057503142117406 : "#MVCI_REA",
+               # 929729117463650324 : "#MVCI_REA", #test reality
                528057526189686784 : "#MVCI_TIM",
                528057513388670976 : "#MVCI_MIN",}
 
@@ -168,6 +168,7 @@ async def fixup_all_channels(ctx):
         
 
 @bot.command(name='clear', help='Delete messages in a channel')
+@commands.has_role('admin')
 async def clear_msgs(ctx, count: int):
     messages = await ctx.history(limit=count).flatten()
     for m in messages:
